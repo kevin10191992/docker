@@ -1,0 +1,58 @@
+sudo apt update -qy && sudo apt upgrade -qy && sudo apt full-upgrade -qy
+
+docker stop portainer && docker rm portainer && docker pull portainer/portainer-ce
+
+docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always --pull=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+
+
+https://docs.gitlab.com/ee/raketasks/backup_restore.html#restore-for-docker-image-and-gitlab-helm-chart-installations
+
+https://hub.docker.com/r/gitlab/gitlab-ce/tags
+
+
+#### Crea backup en el gitlab viejo
+
+docker exec -t gitlab_gitlab_1 gitlab-backup create
+
+
+
+## Para montar en el nuevo
+deber montarlo normal en la misma version de la version del gitlab que hizo el backup
+copias el secreto y el backup en el nuevo server y corres los siguientes comandos
+
+# Stop the processes that are connected to the database
+docker exec -it gitlab gitlab-ctl stop unicorn
+docker exec -it gitlab gitlab-ctl stop puma
+docker exec -it gitlab gitlab-ctl stop sidekiq
+
+# Verify that the processes are all down before continuing
+docker exec -it gitlab gitlab-ctl status
+
+# Run the restore con el nombre del backup sin la ultima parte
+docker exec -it gitlab gitlab-backup restore BACKUP=1625269067_2021_07_02_12.8.6
+
+# Restart the GitLab container
+docker restart gitlab
+
+# Check GitLab
+docker exec -it gitlab gitlab-rake gitlab:check SANITIZE=true
+
+
+luego si actualizar a la version mas nueva de la misma revision es decir 12.8.6 
+ir actualizando versiones de forma escalonada para que corran las migraciones correctamente.
+vas bajando imagen y vas corriendo imagen con el portainer
+
+docker pull gitlab/gitlab-ce:12.8.10-ce.0
+docker pull gitlab/gitlab-ce:12.9.0-ce.0
+docker pull gitlab/gitlab-ce:12.9.10-ce.0
+docker pull gitlab/gitlab-ce:12.10.0-ce.0
+docker pull gitlab/gitlab-ce:12.10.14-ce.0
+docker pull gitlab/gitlab-ce:13.0.14-ce.0
+docker pull gitlab/gitlab-ce:13.1.11-ce.0
+docker pull gitlab/gitlab-ce:13.5.4-ce.0
+docker pull gitlab/gitlab-ce:13.11.4-ce.0
+docker pull gitlab/gitlab-ce:13.11.6-ce.0
+docker pull gitlab/gitlab-ce:13.12.0-ce.0
+docker pull gitlab/gitlab-ce:13.12.6-ce.0
+docker pull gitlab/gitlab-ce:14.0.0-ce.0
+docker pull gitlab/gitlab-ce:14.0.2-ce.0
