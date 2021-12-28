@@ -1,0 +1,18 @@
+version: '3.5'
+services:
+    helloApp:
+        expose:
+           - "8080"
+        image: phozzy/hello-app
+    nginx:
+        image: nginx:latest
+        volumes:
+          - ./nginx.conf:/etc/nginx/nginx.conf:ro
+        depends_on:
+          - helloApp
+        ports:
+          - "4000:4000"
+networks:
+  default:
+    driver: bridge
+    name: helloApp
